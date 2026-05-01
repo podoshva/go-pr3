@@ -57,13 +57,21 @@ const (
 	cap      MerchType = "кепка"
 )
 
+type MerchID int
+
 type Merch struct {
 	Type  MerchType
-	Price int64
+	Price float64
 }
 
-var catalog []MerchType = []MerchType{sweater, trousers, tShirt, cap}
-var cart map[Merch]int = make(map[Merch]int)
+var merchCatalog map[MerchID]Merch = map[MerchID]Merch{
+	1: {Type: sweater, Price: 40.99},
+	2: {Type: trousers, Price: 50.33},
+	3: {Type: tShirt, Price: 20.49},
+	4: {Type: cap, Price: 10.09},
+}
+
+var merchCart map[MerchID]int = make(map[MerchID]int)
 
 func login() string {
 	fmt.Print("Привет, как тебя зовут?\n>>> ")
@@ -73,7 +81,7 @@ func login() string {
 }
 
 func menu() {
-	fmt.Println("Меню\n1 - рекомендация фильма по жанру\n2 - рекомендация фильма по нстроению\n3 - рекомендация музыки по жанру\n4 - рекомендация музыки по нстроению\n5 - рассказать анекдот\n6 - вывести каталог мерча\n7 - заказать мерч\n0 - выход")
+	fmt.Println("\nМеню\n1 - фильм по жанру\n2 - фильм по нстроению\n3 - музыка по жанру\n4 - музыка по нстроению\n5 - анекдот\n6 - каталог мерча\n7 - заказать мерч\n0 - выход")
 	fmt.Print(">>> ")
 }
 
@@ -86,7 +94,7 @@ func printMovieInfo(movie Movie) {
 			fmt.Printf("%s, ", g)
 		}
 	}
-	fmt.Printf("Настроение: %s\n\n", movie.Mood)
+	fmt.Printf("Настроение: %s\n", movie.Mood)
 }
 
 func printMusicInfo(music Music) {
@@ -98,7 +106,7 @@ func printMusicInfo(music Music) {
 			fmt.Printf("%s, ", g)
 		}
 	}
-	fmt.Printf("Настроение: %s\n\n", music.Mood)
+	fmt.Printf("Настроение: %s\n", music.Mood)
 }
 
 func recommendMovieByGenre() {
@@ -177,6 +185,20 @@ func recommendMusicByMood() {
 	printMusicInfo(filtered[rndIndex])
 }
 
+func showMerchCatalog() {
+	fmt.Println("\nКаталог мерча")
+	for id, m := range merchCatalog {
+		fmt.Printf("%d %s - %.2f у.е.\n", id, m.Type, m.Price)
+	}
+}
+
+func orderMerch() {
+	showMerchCatalog()
+	var opt string
+	fmt.Print("\nВведите ID мерча\n>>> ")
+	fmt.Scanln(&opt)
+}
+
 func switcher(opt string) {
 	switch opt {
 	case "1":
@@ -190,11 +212,13 @@ func switcher(opt string) {
 	case "5":
 		break
 	case "6":
-		break
+		showMerchCatalog()
 	case "7":
-		break
+		orderMerch()
 	case "0":
 		break
+	default:
+		fmt.Println("Ошибка!")
 	}
 }
 
@@ -208,3 +232,5 @@ func main() {
 		switcher(opt)
 	}
 }
+
+// это просто огромная куча дублированного кода (говна), да.
