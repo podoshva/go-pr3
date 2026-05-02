@@ -37,9 +37,9 @@ type Music struct {
 }
 
 var music []Music = []Music{
-	{"808s & Heartbreak", "Kanye West", 2008, []string{"электропоп"}, sad},
-	{"Платина", "Платина", 2024, []string{"трэп"}, happy},
-	{"Pink Floyd", "Wish You Were Here", 1975, []string{"рок"}, calm},
+	{"808s & Heartbreak", "Kanye West", 2008, []string{"электропоп", "синти-поп", "RnB"}, sad},
+	{"Платина", "Платина", 2024, []string{"трэп", "рейдж", "хип-хоп"}, happy},
+	{"Pink Floyd", "Wish You Were Here", 1975, []string{"рок", "арт-рок", "экспериментальный рок"}, calm},
 }
 
 var jokes []string = []string{
@@ -71,7 +71,7 @@ var merchCatalog map[MerchID]Merch = map[MerchID]Merch{
 	4: {Type: cap, Price: 10.09},
 }
 
-var merchCart map[MerchID]int = make(map[MerchID]int)
+var merchCart map[MerchID]int = make(map[MerchID]int, len(merchCatalog))
 
 func login() string {
 	fmt.Print("Привет, как тебя зовут?\n>>> ")
@@ -83,6 +83,11 @@ func login() string {
 func menu() {
 	fmt.Println("\nМеню\n1 - фильм по жанру\n2 - фильм по нстроению\n3 - музыка по жанру\n4 - музыка по нстроению\n5 - анекдот\n6 - каталог мерча\n7 - заказать мерч\n0 - выход")
 	fmt.Print(">>> ")
+}
+
+func tellJoke() {
+	rndIndex := rand.Intn(len(jokes))
+	fmt.Printf("\n%s\n", jokes[rndIndex])
 }
 
 func printMovieInfo(movie Movie) {
@@ -186,50 +191,105 @@ func recommendMusicByMood() {
 }
 
 func showMerchCatalog() {
-	fmt.Println("\nКаталог мерча")
+	fmt.Println("\nКаталог")
 	for id, m := range merchCatalog {
-		fmt.Printf("%d %s - %.2f у.е.\n", id, m.Type, m.Price)
+		fmt.Printf("id: %d | тип: %s | цена: %.2f\n", id, m.Type, m.Price)
+	}
+}
+
+func showCart() {
+	var total float64 = 0
+	fmt.Println("\nКорзина")
+	for id, n := range merchCart {
+		m := merchCatalog[id]
+		cost := m.Price * float64(n)
+		total += cost
+		fmt.Printf("id: %d | тип: %s | цена: %.2f у.е. | кол-во: %d | стоимость: %.2f\n", id, m.Type, m.Price, n, cost)
+	}
+	fmt.Printf("Итого: %.2f\n", total)
+}
+
+func addMerchToCart() {
+	fmt.Print("\nВведите ID мерча\n>>> ")
+	var id MerchID
+	fmt.Scanln(&id)
+	if merch, ok := merchCatalog[id]; ok {
+		fmt.Printf("Введите количество \"%s\"\n>>> ", merch.Type)
+		var n int
+		fmt.Scanln(&n)
+		merchCart[id] += n
+	} else {
+		fmt.Printf("Мерч с ID \"%d\" не найден\n", id)
 	}
 }
 
 func orderMerch() {
 	showMerchCatalog()
-	var opt string
-	fmt.Print("\nВведите ID мерча\n>>> ")
-	fmt.Scanln(&opt)
+menu:
+	for {
+		fmt.Print("\nМеню\n1 - добавить мерч в корзину\n2 - оформить заказ\n0 - выйти\n>>> ")
+		var opt string
+		fmt.Scanln(&opt)
+		switch opt {
+		case "1":
+			addMerchToCart()
+			showCart()
+		case "2":
+			showCart()
+			accept := "ПОДТВЕРДИТЬ"
+			fmt.Printf("\nВведите \"%s\"\n>>> ", accept)
+			fmt.Scanln(&opt)
+			if opt == accept {
+				fmt.Println("\nЗаказ успешно оформлен")
+				emptyCart()
+				break menu
+			}
+		case "0":
+			fmt.Println("Заказ отменен")
+			emptyCart()
+			break menu
+		default:
+			fmt.Println("Нет такой опции")
+		}
+	}
 }
 
-func switcher(opt string) {
-	switch opt {
-	case "1":
-		recommendMovieByGenre()
-	case "2":
-		recommendMovieByMood()
-	case "3":
-		recommendMusicByGenre()
-	case "4":
-		recommendMusicByMood()
-	case "5":
-		break
-	case "6":
-		showMerchCatalog()
-	case "7":
-		orderMerch()
-	case "0":
-		break
-	default:
-		fmt.Println("Ошибка!")
-	}
+func emptyCart() {
+	merchCart = make(map[MerchID]int, len(merchCatalog))
+	fmt.Println("Корзина очищена")
+}
+
+func menuSwitcher(opt string) {
 }
 
 func main() {
 	name := login()
 	fmt.Printf("Welcome, %s!\n", name)
 	var opt string
+menu:
 	for {
 		menu()
 		fmt.Scanln(&opt)
-		switcher(opt)
+		switch opt {
+		case "1":
+			recommendMovieByGenre()
+		case "2":
+			recommendMovieByMood()
+		case "3":
+			recommendMusicByGenre()
+		case "4":
+			recommendMusicByMood()
+		case "5":
+			tellJoke()
+		case "6":
+			showMerchCatalog()
+		case "7":
+			orderMerch()
+		case "0":
+			break menu
+		default:
+			fmt.Println("Нет такой опции")
+		}
 	}
 }
 
